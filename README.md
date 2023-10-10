@@ -15,7 +15,7 @@
 ### Contact
 
 <p align="center">
-	<a href="https://www.discord.com/users/Skaylus"><img src="https://img.shields.io/badge/Discord-Skaylus%230001-7289DA?style=for-the-badge&logo=discord&logoColor=white"></a>
+	<a href="https://www.discord.com/users/Skaylus"><img src="https://img.shields.io/badge/Discord-Skaylus-7289DA?style=for-the-badge&logo=discord&logoColor=white"></a>
 	<a href="https://www.instagram.com/smrcheezy"><img src="https://img.shields.io/badge/Instagram-smrcheezy-E4405F?style=for-the-badge&logo=instagram&logoColor=white"></a>
 	<a href="https://www.gmail.com"><img src="https://img.shields.io/badge/mail-sezequie%40student.42lisboa.com.com-000000?style=for-the-badge&logo=42&logoColor=white"></a>
 	<a href="https://www.steamcommunity.com/id/smrcheese"><img src="https://img.shields.io/badge/Steam-smrcheese-000000?style=for-the-badge&logo=steam&logoColor=white"></a>
