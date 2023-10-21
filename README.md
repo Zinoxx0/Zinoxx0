@@ -1,5 +1,5 @@
 ## Samir Mercado 🐬
-#### Student at 42 Lisboa also known as '@skaylus', '@smrcheese' or "sezequie" on 42intra.
+#### Student at 42 Lisboa also known as 'Zinoxx' or "sezequie" as 42 student.
 
 <p align="center">
   <img src="https://unicorn-cdn.b-cdn.net/be85385f-b1cd-4cb4-8f47-21eb64496623/42-lisboa-rgb-horizontal.png" style="width: 500px;">
