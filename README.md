@@ -16,7 +16,7 @@
 
 <p align="center">
 	<a href="https://www.discord.com/users/zinoxx0"><img src="https://img.shields.io/badge/Discord-zinoxx0-7289DA?style=for-the-badge&logo=discord&logoColor=white"></a>
-	<a href="https://www.instagram.com/_Zinoxx"><img src="https://img.shields.io/badge/Instagram-_Zinoxx-E4405F?style=for-the-badge&logo=instagram&logoColor=white"></a>
+	<a href="https://www.instagram.com/Zinoxx.0"><img src="https://img.shields.io/badge/Instagram-Zinoxx.0-E4405F?style=for-the-badge&logo=instagram&logoColor=white"></a>
 	<a href="mailto:sezequie@student.42lisboa.com"><img src="https://img.shields.io/badge/mail-sezequie%40student.42lisboa.com.com-000000?style=for-the-badge&logo=42&logoColor=white"></a>
 	<a href="https://www.steamcommunity.com/id/Zinoxx1"><img src="https://img.shields.io/badge/Steam-Zinoxx-000000?style=for-the-badge&logo=steam&logoColor=white"></a>
 	<a href="https://profile.intra.42.fr/users/sezequie"><img src="https://img.shields.io/badge/profile sezequie-000000?style=for-the-badge&logo=42&logoColor=white"></a>
