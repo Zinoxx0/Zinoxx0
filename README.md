@@ -9,7 +9,7 @@
 
 ### Skills
 <p align="center">
-  <img src="https://skillicons.dev/icons?i=c,cpp,py,html,css,php,js,bootstrap,django,linux,git,bash,githubactions,vscode,photoshop,aftereffects,premiere">
+  <img src="https://skillicons.dev/icons?i=c,cpp,py,html,css,php,js,bootstrap,django,linux,git,bash,githubactions,vscode,photoshop,aftereffects">
 </p>
 
 ### Contact
