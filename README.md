@@ -2,7 +2,7 @@
 #### Student at 42 Lisboa also known as 'Zinoxx'.
 
 <p align="center">
-  <img src="https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcQ8RBBKrUHKq0N0uC3ai9JDPpodZWlnX_QY4g&s" style="width: 500px;">
+  <img src="https://www.42lisboa.com/wp-content/uploads/2024/08/42-Lisboa_Horizontal.png" style="width: 500px;">
 </p>
 
 <!-- [![faaraujo's 42 stats](https://badge42.vercel.app/api/v2/clgrr2va0002108jo3cc5foww/stats?cursusId=21&coalitionId=piscine)](https://github.com/JaeSeoKim/badge42) -->
