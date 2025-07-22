@@ -5,8 +5,7 @@
   <img src="https://www.42lisboa.com/wp-content/uploads/2024/08/42-Lisboa_Horizontal.png" style="width: 500px;">
 </p>
 
-## project in progress!🏗️🛠️
-
+## project in progress!🏗️🛠️.
 #[Push Swap (Stochastic Method)](https://github.com/Zinoxx0/Push_Swap)
 
 ### Contact
