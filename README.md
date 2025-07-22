@@ -9,7 +9,6 @@
 #[Push Swap (Stochastic Method)](https://github.com/Zinoxx0/Push_Swap)
 
 ### Contact
-
 <p align="center">
 	<a href="https://www.discord.com/users/zinoxx0"><img src="https://img.shields.io/badge/Discord-zinoxx0-7289DA?style=for-the-badge&logo=discord&logoColor=white"></a>
 	<a href="https://www.instagram.com/Zinoxx.0"><img src="https://img.shields.io/badge/Instagram-Zinoxx.0-E4405F?style=for-the-badge&logo=instagram&logoColor=white"></a>
