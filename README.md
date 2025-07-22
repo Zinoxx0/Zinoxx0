@@ -2,7 +2,7 @@
 #### Student at 42 Lisboa also known as 'Zinoxx'.
 
 <p align="center">
-  <img src="https://unicorn-cdn.b-cdn.net/be85385f-b1cd-4cb4-8f47-21eb64496623/42-lisboa-rgb-horizontal.png" style="width: 500px;">
+  <img src="[https://unicorn-cdn.b-cdn.net/be85385f-b1cd-4cb4-8f47-21eb64496623/42-lisboa-rgb-horizontal.png](https://www.itjobs.pt/empresa/42-lisboa/logo/social)" style="width: 500px;">
 </p>
 
 <!-- [![faaraujo's 42 stats](https://badge42.vercel.app/api/v2/clgrr2va0002108jo3cc5foww/stats?cursusId=21&coalitionId=piscine)](https://github.com/JaeSeoKim/badge42) -->
