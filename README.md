@@ -7,7 +7,7 @@
 
 ### project in progress!🏗️🛠️.
 
-## [Push Swap (Stochastic Method)](https://github.com/Zinoxx0/Push_Swap)
+# [Push Swap (Stochastic Method)](https://github.com/Zinoxx0/Push_Swap)
 
 ### Contact
 <p align="center">
