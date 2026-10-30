@@ -4,6 +4,7 @@ Each card is one image, and they all share the day clock, so while the hero's sk
 move with it. The numbers come from build.py's fetch. The Libft_Tester terminal replays a real run,
 kept in data/libt-run.txt.
 """
+import scene
 from draw import DATA, FPS, ICONS, KNOTS, PALETTE, Svg, glass, hairline, mark42, num, rrect, strip, width
 
 W = 1280
@@ -244,6 +245,25 @@ def chip(text, icon, sub=None):
     s.add(s.text(text, 50, 31, 19, "t500", INK))
     if sub:
         s.add(s.text(sub, 50 + width(text, 19, "t500") + 14, 31, 17, "m400", SOFT))
+    return s.render()
+
+
+def today(sun, moon):
+    """Lisbon's sky today, which the pre-rendered hero can't know: sunrise, sunset and the real moon."""
+    hours, name = f"{sun[0]} – {sun[1]}", moon["name"]
+    s = Svg(1, CHIP, f"Lisbon today: sun up {sun[0]} to {sun[1]}, {name.lower()}")
+    w1, w2 = width(hours, 18, "t500"), width(name, 18, "t500")
+    w = s.w = int(50 + w1 + 42 + w2 + 22)
+    hair = hairline(s, 0, w)
+    sheen = s.linear([(0, "#fff", .12), (1, "#fff", 0)], y2=.7)
+    outline = rrect(1, 1, w - 2, CHIP - 2, CHIP / 2 - 1)
+    s.add(f'<path d="{outline}" fill="{CARD}"/><path d="{outline}" fill="url(#{sheen})"/>'
+          f'<path d="{outline}" fill="none" stroke="url(#{hair})" stroke-width="1.5"/>')
+    s.add(scene._sun_glyph(28, 24), s.text(hours, 50, 30.5, 18, "t500", INK))
+    mx = 50 + w1 + 26
+    s.add(f'<g transform="translate({num(mx)} 24) rotate(-22)"><circle r="10" fill="{INK}" opacity=".13"/>'
+          f'<path d="{scene.moon_path(10, moon["phase"])}" fill="{INK}"/></g>')
+    s.add(s.text(name, mx + 18, 30.5, 18, "t500", INK))
     return s.render()
 
 

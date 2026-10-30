@@ -87,6 +87,7 @@ def render(data):
         "libt": cards.libt(),
         "dock": cards.dock(languages(user)),
         "pool": pool.pool(days, calendar["totalContributions"]),
+        "today": cards.today((sunrise.strftime("%H:%M"), sunset.strftime("%H:%M")), sky.moon(now)),
         "chip-intra": cards.chip("42 Intra", "42", "samercad"),
         "chip-mail": cards.chip("samercad@student.42lisboa.com", "mail"),
         "chip-instagram": cards.chip("Instagram", "instagram", "Zinoxx.0"),

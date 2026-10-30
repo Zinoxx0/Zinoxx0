@@ -1,6 +1,8 @@
 <div align="center">
 
-<a href="https://github.com/Zinoxx0/Zinoxx0/tree/main/gen"><img src="https://raw.githubusercontent.com/Zinoxx0/Zinoxx0/output/hero.svg" width="100%" alt="Samir Mercado, also known as Zinoxx, samercad at 42 Lisboa. An animated view of Lisbon over the Tagus: the sun sets behind the 25 de Abril bridge, the city lights up, and a dolphin leaps in the river."></a>
+<a href="https://github.com/Zinoxx0/Zinoxx0/tree/main/gen"><picture><source media="(prefers-reduced-motion: no-preference)" type="image/avif" srcset="https://raw.githubusercontent.com/Zinoxx0/Zinoxx0/film/hero.avif"><img src="https://raw.githubusercontent.com/Zinoxx0/Zinoxx0/output/hero.svg" width="100%" alt="Samir Mercado, also known as Zinoxx, samercad at 42 Lisboa. An animated view of Lisbon over the Tagus: the sun sets behind the 25 de Abril bridge, the city lights up, and a dolphin leaps in the river."></picture></a>
+
+<img src="https://raw.githubusercontent.com/Zinoxx0/Zinoxx0/output/today.svg" height="38" alt="Today's sunrise, sunset and moon phase in Lisbon.">
 
 I'm Samir, also known as Zinoxx. I'm a student at [42 Lisboa](https://www.42lisboa.com) (`samercad` on the intra) and co-founder and lead engineer at [ViVia Technologies](https://viviatech.github.io). I also edit VFX, so I care about how software looks as much as how it runs, which is how a desktop theme turned into 22,000 lines of code.
 
@@ -48,6 +50,6 @@ I'm Samir, also known as Zinoxx. I'm a student at [42 Lisboa](https://www.42lisb
 
 <br>
 
-<sub>This page works like Atom Plasma: the sky over Lisbon is the wallpaper, and the page's accents are computed from it by the rice's own palette engine. Today's sunrise, sunset and moon are real, and the images are redrawn every day. <a href="https://github.com/Zinoxx0/Zinoxx0/tree/main/gen">See how it's made</a>.</sub>
+<sub>This page works like Atom Plasma: the sky over Lisbon is the wallpaper, and the page's accents are computed from it by the rice's own palette engine. The hero is drawn entirely in code and rendered to a 24 fps AV1 film; everything else is redrawn every day with live data. <a href="https://github.com/Zinoxx0/Zinoxx0/tree/main/gen">See how it's made</a>.</sub>
 
 </div>
