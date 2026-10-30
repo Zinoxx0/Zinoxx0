@@ -2,6 +2,8 @@
 
 It works like Atom Plasma: this is the wallpaper, and the rest of the page takes its colours from it.
 The day starts at golden hour, so in the first twenty seconds the sun sets and the city lights up.
+film.py renders this scene to the 24 fps video on the profile, so every loop here has to divide the 96 s
+day exactly, or the video would jump where it wraps. The SVG remains as the fallback and reduced-motion still.
 PAINT is the colour script, one row per painted thing and one column per key moment, the way an anime
 background team plans a sequence. Everything below it only says what is where.
 """
@@ -95,11 +97,11 @@ class Paint:
         return (offset, PAINT[name][0], opacity, self._class("s", "stop-color", name))
 
 
-def hero(sun, moon, seed=42, desktop=True):
-    """sun: today's sunrise and sunset as 'HH:MM'; moon: sky.moon() for tonight. desktop=False leaves only
-    the wallpaper, which is what the palette engine gets to see."""
+def hero(sun, moon, seed=42, desktop=True, pace=24):
+    """sun: today's sunrise and sunset as 'HH:MM', or None to leave that line out; moon: sky.moon() for
+    tonight. desktop=False leaves only the wallpaper, which is what the palette engine gets to see."""
     s = Svg(W, H, "Samir Mercado", "One day over Lisbon: the sun sets behind the 25 de Abril bridge, the city "
-            "lights up, the stars and moon come out, and a dolphin leaps in the Tagus.", pace=24)
+            "lights up, the stars and moon come out, and a dolphin leaps in the Tagus.", pace=pace)
     p = Paint(s)
     rng = random.Random(seed)
     for i, v in enumerate(LIT):
@@ -210,12 +212,12 @@ def _cumulus(rng, cx, w, base, h, layers=6):
 
 
 def _clouds(s, p, rng):
-    """Two bands that tile every 1280 px, each drifting one tile per loop. The far band leaves the sun clear
-    at the opening; the near one stays below the name."""
+    """Two bands that tile every 1280 px, each drifting one tile per loop, with a copy on each side because
+    billows overhang the tile. The far band leaves the sun clear at the opening; the near one stays below the name."""
     grad = s.linear([p.stop(0, "cloudhi"), p.stop(.34, "cloudhi"), p.stop(1, "cloudlo")])
     bands = {
-        ("drift1", 192): [(170, 330, SEA + 10, 128), (548, 330, SEA + 10, 170), (1125, 300, SEA + 10, 96)],
-        ("drift2", 96): [(90, 230, 262, 62), (640, 190, 250, 52), (1020, 210, 268, 66)],
+        ("drift1", 96): [(170, 330, SEA + 10, 128), (548, 330, SEA + 10, 170), (1125, 300, SEA + 10, 96)],
+        ("drift2", 48): [(90, 230, 262, 62), (640, 190, 250, 52), (1020, 210, 268, 66)],
     }
     out = ""
     for (cls, secs), clouds in bands.items():
@@ -223,21 +225,22 @@ def _clouds(s, p, rng):
         i = s.uid()
         s.defs.append(f'<g id="{i}">{tile}</g>')
         s.clock(cls, secs, [(0, "transform:translateX(0)"), (100, "transform:translateX(-1280px)")])
-        out += f'<g class="{cls}"><use href="#{i}"/><use href="#{i}" x="1280"/></g>'
+        out += f'<g class="{cls}"><use href="#{i}" x="-1280"/><use href="#{i}"/><use href="#{i}" x="1280"/></g>'
     return out
 
 
 def _high_clouds(s, p, rng):
     """Thin streaks of cirrus, the first thing to catch the light and the last to lose it."""
     d = ""
-    for _ in range(11):
-        x, y, w = rng.uniform(0, 1280), rng.uniform(16, 176), rng.uniform(120, 340)
+    for _ in range(6):
+        x, y, w = rng.uniform(0, 640), rng.uniform(16, 176), rng.uniform(120, 340)
         h = rng.uniform(1.4, 3.6)
         d += f"M{x:.0f} {y:.0f}q{w / 2:.0f} {-h:.1f} {w:.0f} 0q{-w / 2:.0f} {h * 1.6:.1f} {-w:.0f} 0z"
     i = s.uid()
     s.defs.append(f'<path id="{i}" d="{d}"/>')
-    s.clock("drift3", 288, [(0, "transform:translateX(0)"), (100, "transform:translateX(-1280px)")])
-    return f'<g class="drift3" fill-opacity=".34"><g {p.fill("cloudhi")}><use href="#{i}"/><use href="#{i}" x="1280"/></g></g>'
+    s.clock("drift3", 96, [(0, "transform:translateX(0)"), (100, "transform:translateX(-640px)")])
+    tiles = "".join(f'<use href="#{i}" x="{x}"/>' for x in (-640, 0, 640, 1280))
+    return f'<g class="drift3" fill-opacity=".34"><g {p.fill("cloudhi")}>{tiles}</g></g>'
 
 
 def _haze(s, p):
@@ -408,22 +411,27 @@ def _bridge(s, p):
     beacons = "".join(circle(_bx(u), _by(u, 197), 2.4) for u in TOWERS)
     s.clock("beacon", 3, [(0, "opacity:1"), (49.9, "opacity:1"), (50, "opacity:.08"), (100, "opacity:.08")])
     x0, y0, x1, y1 = _bx(0), _by(0, 73), _bx(1), _by(1, 73)
-    dx, dy = num(x1 - x0), num(y1 - y0)
-    s.clock("cars", 18, [(0, "transform:translate(0,0)"), (100, f"transform:translate({dx}px,{dy}px)")])
-    s.clock("cars2", 22, [(0, f"transform:translate({dx}px,{dy}px)"), (100, "transform:translate(0,0)")])
-    east = "".join(f"M{x0 - 150 * n - 20:.0f} {y0 + n * .95:.1f}h0" for n in range(-4, 2))
-    west = "".join(f"M{x0 - 130 * n - 60:.0f} {y0 + 2 + n * .95:.1f}h0" for n in range(-4, 2))
+    dx, dy = (x1 - x0) / 5, (y1 - y0) / 5
+    to = f"transform:translate({num(dx)}px,{num(dy)}px)"
+    s.clock("cars", 16, [(0, "transform:translate(0,0)"), (100, to)])
+    s.clock("cars2", 24, [(0, to), (100, "transform:translate(0,0)")])
+    east = "".join(f"M{x0 + dx * n + 20:.1f} {y0 + dy * n:.1f}h0" for n in range(-1, 6))
+    west = "".join(f"M{x0 + dx * n + 60:.1f} {y0 + 2 + dy * n:.1f}h0" for n in range(-1, 6))
+    deck = s.uid()
+    s.defs.append(f'<clipPath id="{deck}"><rect x="{num(x0)}" y="{num(y1 - 12)}" width="{num(x1 - x0)}" height="{num(y0 - y1 + 24)}"/></clipPath>')
     return (f'<g clip-path="url(#{s.river})"><use href="#{i}" transform="matrix(1 0 0 -1 0 {2 * SEA + 14})" fill-opacity=".2" stroke-opacity=".2"/></g><use href="#{i}"/>'
             f'<g class="night" opacity="0"><path class="beacon" d="{beacons}" fill="#ff5a4e"/>'
-            f'<g stroke-linecap="round" stroke-width="2.2"><path class="cars" d="{east}" stroke="#ffe7b0"/>'
+            f'<g clip-path="url(#{deck})" stroke-linecap="round" stroke-width="2.2"><path class="cars" d="{east}" stroke="#ffe7b0"/>'
             f'<path class="cars2" d="{west}" stroke="#ff8a70"/></g></g>')
 
 
 # ---- life on the river
 
 def _boats(s, p):
-    """A cacilheiro on its crossing, and a sailboat that never quite gets anywhere."""
-    s.clock("ferry", 96, [(0, "transform:translate(760px,383px)"), (100, "transform:translate(-90px,398px)")])
+    """A cacilheiro shuttling across and back, and a sailboat that never quite gets anywhere."""
+    crossing = [(i * 100 / 24, "transform:translate({}px,{}px)".format(
+        num(430 + 330 * math.cos(i * math.pi / 12)), num(390.5 - 7.5 * math.cos(i * math.pi / 12)))) for i in range(25)]
+    s.clock("ferry", 96, crossing)
     s.clock("sail", 48, [(0, "transform:translate(226px,374px)"), (50, "transform:translate(292px,376px)"), (100, "transform:translate(226px,374px)")])
     hull = "M-30 0h60l-4.6 8.4h-50.6z"
     stripe = "M-29 3h57.6l-1 2h-55.6z"
@@ -506,7 +514,7 @@ def _dolphins(s):
 
 def _gulls(s):
     wing = "M0 0q5 -6 11 -1q6 -5 11 1q-6 -3 -11 1q-5 -4 -11 -1z"
-    s.clock("gulls", 40, [(0, "transform:translate(1300px,206px)"), (100, "transform:translate(-160px,120px)")])
+    s.clock("gulls", 48, [(0, "transform:translate(1300px,206px)"), (100, "transform:translate(-160px,120px)")])
     s.clock("flap", 1, [(0, "transform:scaleY(1)"), (50, "transform:scaleY(.35)"), (100, "transform:scaleY(1)")])
     flock = ((0, 0, 1), (34, 20, .8), (66, -7, .7), (96, 26, .62))
     g = "".join(f'<g transform="translate({x} {y}) scale({k})"><path class="flap" d="{wing}" fill="#fff"/></g>' for x, y, k in flock)
@@ -635,13 +643,15 @@ def _lockup(s, sun, moon):
     size = 66
     w2, w1 = width("Mercado", size, "d300"), width("Samir", size, "d800")
     sub = "ZINOXX  ·  SAMERCAD @ 42 LISBOA"
-    day = f"{sun[0]} – {sun[1]}  ·  {moon['name']}"
-    return (f'<ellipse cx="{right - 180}" cy="96" rx="330" ry="118" fill="url(#{scrim})"/>'
-            + s.text("Samir", right - w2 - w1 - 16, 96, size, "d800")
-            + s.text("Mercado", right - w2, 96, size, "d300")
-            + s.text(sub, right, 129, 16, "t500", anchor="end", track=3.1, opacity=.94)
-            + _sun_glyph(right - width(day, 16, "t400") - 18, 150)
-            + s.text(day, right, 156, 16, "t400", anchor="end", opacity=.86))
+    out = (f'<ellipse cx="{right - 180}" cy="96" rx="330" ry="118" fill="url(#{scrim})"/>'
+           + s.text("Samir", right - w2 - w1 - 16, 96, size, "d800")
+           + s.text("Mercado", right - w2, 96, size, "d300")
+           + s.text(sub, right, 129, 16, "t500", anchor="end", track=3.1, opacity=.94))
+    if sun:
+        day = f"{sun[0]} – {sun[1]}  ·  {moon['name']}"
+        out += (_sun_glyph(right - width(day, 16, "t400") - 18, 150)
+                + s.text(day, right, 156, 16, "t400", anchor="end", opacity=.86))
+    return out
 
 
 def _sun_glyph(x, y):

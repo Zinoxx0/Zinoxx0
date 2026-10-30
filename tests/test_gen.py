@@ -106,6 +106,18 @@ class Images(unittest.TestCase):
         for name in ("hero", "atom", "libt", "dock", "pool"):
             self.assertIn(f"{draw.CYCLE}s", self.images[name], name)
 
+    def test_every_hero_loop_fits_the_film(self):
+        # the video wraps at 96 s, so anything on another cycle would visibly jump there
+        for name, seconds in re.findall(r"\.(\w+)\{animation:\w+ ([\d.]+)s", self.images["hero"]):
+            self.assertEqual(draw.CYCLE % float(seconds), 0, name)
+
+    def test_film_leaves_out_what_changes_daily(self):
+        moon = {"phase": .3, "name": "Waxing crescent"}
+        self.assertGreater(len(scene.hero(("07:01", "17:38"), moon)), len(scene.hero(None, moon)))
+
+    def test_today_chip_names_the_sky(self):
+        self.assertRegex(self.images["today"], r'aria-label="Lisbon today: sun up \d\d:\d\d to \d\d:\d\d, [a-z ]+"')
+
     def test_alt_text_says_what_the_picture_shows(self):
         for name, svg in self.images.items():
             self.assertRegex(svg, r'<svg[^>]+aria-label="[^"]+"', name)

@@ -10,6 +10,7 @@
 Usage: python3 gen/make_data.py fonts icons palettes libt
 """
 import json
+import os
 import pathlib
 import re
 import shutil
@@ -194,7 +195,8 @@ def palettes():
             page.write_text(f"<!doctype html><style>*{{animation-play-state:paused!important;"
                             f"animation-delay:-{t}s!important}}</style><body style=margin:0>{svg}")
             subprocess.run(["firefox", "--headless", "--no-remote", "--profile", str(tmp), "--window-size=1280,540",
-                            "--screenshot", str(png), f"file://{page}"], capture_output=True, timeout=60, check=True)
+                            "--screenshot", str(png), f"file://{page}"], capture_output=True, timeout=60, check=True,
+                           env={**os.environ, "MOZ_CRASHREPORTER_DISABLE": "1"})
             analysis = engine.analyse(str(png))
             colours = engine.build_v2(analysis)
             for key in ("primary", "secondary", "tertiary"):
