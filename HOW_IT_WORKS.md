@@ -548,14 +548,15 @@ Firefox. The cause was the scan bar: between wipes it was invisible, but it was 
 hidden element that's still changing makes the browser repaint three screenshots every frame, for nothing. Holding it
 still between wipes dropped the cost to 5%.
 
-Measured on a GitHub-sized page with software rendering, as a share of one CPU core:
+Measured with software rendering, as a share of one CPU core. Each image was measured alone, and the last row is the
+real page on github.com, which also carries GitHub's own interface:
 
 | Image | Firefox | Chrome |
 |---|---|---|
 | Hero | 26% | 10% |
 | Atom Plasma | 5% | 3% |
 | Libft Tester | 5% | 3% |
-| Whole page | 24% | 16% |
+| Whole page on github.com | 34% | 19% |
 
 If you ever measure a panel at 0%, don't celebrate: the image probably failed to load. Check a render first.
 
