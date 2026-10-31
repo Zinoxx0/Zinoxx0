@@ -1,5 +1,5 @@
 #!/usr/bin/env python3
-"""Draws every image on the profile into dist/, from live GitHub data and today's sky.
+"""Draws every image on the profile into dist/, from live GitHub data.
 
 Standard library only, so the daily workflow needs no setup. Anything failing here is an error on
 purpose: the workflow then publishes nothing and yesterday's images stay up.
@@ -14,29 +14,34 @@ import subprocess
 import urllib.request
 from xml.etree import ElementTree
 
-import cards
-import pool
-import scene
-import sky
+import hero
+import panels
 
 LOGIN = "Zinoxx0"
 DIST = pathlib.Path(__file__).resolve().parent.parent / "dist"
-# not code I wrote by hand for itself, so it would only skew the language bar
+# the profile itself is drawn by a robot every night, so it would only skew the numbers
 SKIP_REPOS = {LOGIN}
 TOP_LANGUAGES = 6
+# The bodies of the map, and the rows of the table. Seven, because a pass of the map is 7 x 6 s = 42 s.
+ORBITS = 7
+# Each row is a link in the README, which never changes, so the table keeps a fixed order.
+TABLE = ("Atom-Plasma", "Libft_Tester", "Libft", "Piscine42", "Pipex", "Get_next_line", "Printf")
 
 QUERY = """
 query($login: String!) {
   user(login: $login) {
     contributionsCollection {
-      contributionCalendar { totalContributions weeks { contributionDays { date contributionCount } } }
+      contributionCalendar { totalContributions weeks { contributionDays { contributionCount } } }
     }
-    repositories(first: 100, ownerAffiliations: OWNER, privacy: PUBLIC, isFork: false) {
-      nodes { name languages(first: 12) { edges { size node { name } } } }
+    repositories(first: 100, ownerAffiliations: OWNER, privacy: PUBLIC, isFork: false,
+                 orderBy: {field: PUSHED_AT, direction: DESC}) {
+      nodes {
+        name pushedAt
+        primaryLanguage { name }
+        languages(first: 12) { edges { size node { name } } }
+        defaultBranchRef { target { ... on Commit { abbreviatedOid history { totalCount } } } }
+      }
     }
-  }
-  atom: repository(owner: "Zinoxx0", name: "Atom-Plasma") {
-    defaultBranchRef { target { ... on Commit { history { totalCount } } } }
   }
 }
 """
@@ -59,6 +64,32 @@ def fetch():
     return body["data"]
 
 
+def ago(days):
+    """How long ago, the way a process table would say it."""
+    if days < 14:
+        return f"{days}d ago"
+    if days < 60:
+        return f"{days // 7}w ago"
+    if days < 730:
+        return f"{days // 30}mo ago"
+    return f"{days // 365}y ago"
+
+
+def repos(user, now):
+    """My own public repos, freshest first."""
+    out = []
+    for node in user["repositories"]["nodes"]:
+        if node["name"] in SKIP_REPOS or not node["defaultBranchRef"]:
+            continue
+        pushed = dt.datetime.fromisoformat(node["pushedAt"].replace("Z", "+00:00"))
+        days = (now - pushed).days
+        head = node["defaultBranchRef"]["target"]
+        out.append({"name": node["name"], "lang": (node["primaryLanguage"] or {}).get("name", "-"),
+                    "commits": head["history"]["totalCount"], "head": head["abbreviatedOid"],
+                    "days": days, "ago": ago(days)})
+    return sorted(out, key=lambda repo: repo["days"])
+
+
 def languages(user):
     """[(name, percent)] by bytes across my own public repos, the small ones folded into Other."""
     sizes = {}
@@ -74,35 +105,36 @@ def languages(user):
     return top + ([("Other", rest)] if rest >= .1 else [])
 
 
-def render(data):
-    """Every image, by file name, from fetch()'s answer and today's sky."""
+def render(data, now):
+    """Every image, by file name, from fetch()'s answer."""
     user = data["user"]
     calendar = user["contributionsCollection"]["contributionCalendar"]
-    days = [(d["date"], d["contributionCount"]) for week in calendar["weeks"] for d in week["contributionDays"]]
-    now = dt.datetime.now(sky.TZ)
-    sunrise, sunset = sky.sun_times(now.date())
+    weeks = [sum(day["contributionCount"] for day in week["contributionDays"]) for week in calendar["weeks"]]
+    every = repos(user, now)
+    by_name = {repo["name"]: repo for repo in every}
+    stamp = now.strftime("%Y-%m-%d %H:%MZ")
+    stats = {"repos": len(every), "commits": sum(repo["commits"] for repo in every),
+             "year": calendar["totalContributions"], "stamp": stamp}
     images = {
-        "hero": scene.hero((sunrise.strftime("%H:%M"), sunset.strftime("%H:%M")), sky.moon(now)),
-        "atom": cards.atom(data["atom"]["defaultBranchRef"]["target"]["history"]["totalCount"]),
-        "libt": cards.libt(),
-        "dock": cards.dock(languages(user)),
-        "pool": pool.pool(days, calendar["totalContributions"]),
-        "today": cards.today((sunrise.strftime("%H:%M"), sunset.strftime("%H:%M")), sky.moon(now)),
-        "chip-intra": cards.chip("42 Intra", "42", "samercad"),
-        "chip-mail": cards.chip("samercad@student.42lisboa.com", "mail"),
-        "chip-instagram": cards.chip("Instagram", "instagram", "Zinoxx.0"),
-        "chip-steam": cards.chip("Steam", "steam", "Zinoxx"),
+        "hero": hero.hero(every[:ORBITS], weeks, stats),
+        "atom": panels.atom(by_name["Atom-Plasma"]["commits"]),
+        "libt": panels.libt(by_name["Libft_Tester"]["commits"]),
+        "ps-head": panels.table_head(),
+        "stack": panels.stack(languages(user)),
+        "eof": panels.eof(stamp),
     }
-    for repo in ("Piscine42", "Libft", "Printf", "Get_next_line", "Pipex"):
-        images[f"chip-{repo.lower()}"] = cards.chip(repo, "repo")
+    for name in TABLE:
+        images[f"ps-{name.lower()}"] = panels.table_row(by_name[name])
     return images
 
 
 def main():
-    images = render(fetch())
+    images = render(fetch(), dt.datetime.now(dt.timezone.utc))
     for svg in images.values():
         ElementTree.fromstring(svg)                 # a broken image must stop the run, not go live
     DIST.mkdir(exist_ok=True)
+    for old in DIST.glob("*"):
+        old.unlink()
     for name, svg in images.items():
         (DIST / f"{name}.svg").write_text(svg, encoding="utf-8")
     print(f"{len(images)} images, {sum(len(svg.encode()) for svg in images.values()) // 1024} KB")

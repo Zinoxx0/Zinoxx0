@@ -1,16 +1,16 @@
 #!/usr/bin/env python3
 """Rebuilds gen/data/ on this machine. Never runs in CI: the daily build only reads what this writes.
 
-    fonts     Inter and JetBrains Mono (the rice's two fonts) as outlines, because an SVG inside an
-              <img> can't count on loading a font
-    icons     the dock's tech icons, the contact icons and the 42 mark
-    palettes  every knot of the day through Atom Plasma's own palette engine (needs dist/hero.svg)
+    fonts     Geist Mono as outlines, because an SVG inside an <img> can't count on loading a font
+    shots     the three desktop screenshots, cut down to what the Atom panel can show
+    palettes  those screenshots through Atom Plasma's own palette engine
     libt      a real `libt all` run of the tester against the real libft
 
-Usage: python3 gen/make_data.py fonts icons palettes libt
+Usage: python3 gen/make_data.py fonts shots palettes libt
 """
+import importlib.util
+import io
 import json
-import os
 import pathlib
 import re
 import shutil
@@ -21,36 +21,31 @@ import urllib.request
 
 HERE = pathlib.Path(__file__).resolve().parent
 DATA = HERE / "data"
-INTER = "/usr/share/fonts/inter/InterVariable.ttf"
-MONO = "/usr/share/fonts/TTF/JetBrainsMonoNerdFontMono-{}.ttf"
+ASSETS = HERE.parent / "assets"
 RICE = pathlib.Path.home() / ".config/plasma-rice"
 TESTER = pathlib.Path.home() / "Projects/42/Libft_Tester"
 LIBFT = pathlib.Path.home() / "Projects/42/Libft/src"
-CHARS = "".join(map(chr, range(32, 127))) + "·—–→✓✗°…↗"
 
-# name: (file, variable axes). The d* faces are Inter's display cut, the t* faces its text cut.
-FACES = {
-    "d300": (INTER, {"opsz": 32, "wght": 300}),
-    "d800": (INTER, {"opsz": 32, "wght": 800}),
-    "t400": (INTER, {"opsz": 14, "wght": 400}),
-    "t500": (INTER, {"opsz": 14, "wght": 500}),
-    "t600": (INTER, {"opsz": 14, "wght": 600}),
-    "m400": (MONO.format("Regular"), None),
-    "m700": (MONO.format("Bold"), None),
-}
+GEIST = "https://cdn.jsdelivr.net/fontsource/fonts/geist-mono@5.3.0/latin-{}-normal.ttf"
+FACES = {"m400": 400, "m500": 500}
+CHARS = "".join(map(chr, range(32, 127))) + "·—°"
+
+SHOTS = ("teal", "lilac", "ink")
+SHOT_WIDTH = 1280
+# what the panel prints as a palette, darkest to lightest, by the engine's names
+RAMP = ("background", "surface_high", "primary_dim", "tertiary", "primary", "secondary")
 
 
 def fonts():
     from fontTools.pens.svgPathPen import SVGPathPen
     from fontTools.pens.transformPen import TransformPen
     from fontTools.ttLib import TTFont
-    from fontTools.varLib import instancer
 
     out = {}
-    for name, (path, axes) in FACES.items():
-        font = TTFont(path)
-        if axes:
-            font = instancer.instantiateVariableFont(font, axes)
+    for name, weight in FACES.items():
+        request = urllib.request.Request(GEIST.format(weight), headers={"User-Agent": "Mozilla/5.0"})
+        with urllib.request.urlopen(request, timeout=30) as reply:
+            font = TTFont(io.BytesIO(reply.read()))
         k = 1000 / font["head"].unitsPerEm
         cmap, glyphs, hmtx = font.getBestCmap(), font.getGlyphSet(), font["hmtx"]
         adv, outline = {}, {}
@@ -58,11 +53,10 @@ def fonts():
             g = cmap[ord(ch)]
             adv[ch] = round(hmtx[g][0] * k)
             pen = SVGPathPen(glyphs, ntos=lambda v: str(round(v)))
-            glyphs[g].draw(TransformPen(pen, (k, 0, 0, -k, 0, 0)))     # y down, like SVG
+            glyphs[g].draw(TransformPen(pen, (k, 0, 0, -k, 0, 0)))      # y down, like SVG
             if pen.getCommands():
                 outline[ch] = _relative(pen.getCommands())
-        out[name] = {"adv": adv, "d": outline, "kern": _kerning(font, cmap, k),
-                     "cap": round(font["OS/2"].sCapHeight * k), "x": round(font["OS/2"].sxHeight * k)}
+        out[name] = {"adv": adv, "d": outline}
     DATA.mkdir(exist_ok=True)
     (DATA / "glyphs.json").write_text(json.dumps(out, ensure_ascii=False, separators=(",", ":")))
     print("glyphs.json", (DATA / "glyphs.json").stat().st_size // 1024, "KB")
@@ -105,105 +99,28 @@ def _join(nums):
     return text
 
 
-def _kerning(font, cmap, k):
-    """Non-zero pair kerning over CHARS, read from the font's GPOS 'kern' lookups."""
-    if "GPOS" not in font:
-        return {}
-    gpos = font["GPOS"].table
-    lookups = sorted({i for r in gpos.FeatureList.FeatureRecord if r.FeatureTag == "kern"
-                      for i in r.Feature.LookupListIndex})
-    names = {c: cmap[ord(c)] for c in CHARS if c != " "}
-    pairs = {}
-    for i in lookups:
-        for st in gpos.LookupList.Lookup[i].SubTable:
-            st = getattr(st, "ExtSubTable", st)
-            if st.LookupType != 2:
-                continue
-            cov = st.Coverage.glyphs
-            for a, an in names.items():
-                if an not in cov:
-                    continue
-                for b, bn in names.items():
-                    if a + b in pairs:
-                        continue
-                    v = _pair(st, cov.index(an), an, bn)
-                    if v is not None:
-                        pairs[a + b] = v            # first subtable that knows the pair wins, as in shaping
-    return {p: round(v * k) for p, v in pairs.items() if round(v * k)}
-
-
-def _pair(st, index, an, bn):
-    if st.Format == 1:
-        for rec in st.PairSet[index].PairValueRecord:
-            if rec.SecondGlyph == bn:
-                return getattr(rec.Value1, "XAdvance", 0) or 0
-        return None
-    c1 = st.ClassDef1.classDefs.get(an, 0)
-    c2 = st.ClassDef2.classDefs.get(bn, 0)
-    return getattr(st.Class1Record[c1].Class2Record[c2].Value1, "XAdvance", 0) or 0
-
-
-# the dock's icons, by file name in tandpfun/skill-icons (MIT)
-SKILLS = {"c": "C", "cpp": "CPP", "py": "Python-Dark", "qt": "QT-Dark", "js": "JavaScript", "bash": "Bash-Dark",
-          "linux": "Linux-Dark", "git": "Git", "ps": "Photoshop", "ae": "AfterEffects"}
-BRANDS = ("instagram", "steam")          # from simple-icons (CC0)
-
-
-def _get(url):
-    req = urllib.request.Request(url, headers={"User-Agent": "Mozilla/5.0"})
-    with urllib.request.urlopen(req, timeout=30) as r:
-        return r.read().decode()
-
-
-def icons():
-    out = {"skills": {}, "brands": {}}
-    for key, name in SKILLS.items():
-        svg = _get(f"https://raw.githubusercontent.com/tandpfun/skill-icons/main/icons/{name}.svg")
-        body = re.sub(r"^.*?<svg[^>]*>|</svg>\s*$", "", svg, flags=re.S).strip()
-        # ids must stay unique once the icons share one file
-        for i in set(re.findall(r'id="([^"]+)"', body)):
-            body = re.sub(rf'(id="|#){re.escape(i)}\b', lambda m: f"{m.group(1)}{key}-{i}", body)
-        out["skills"][key] = body
-    for name in BRANDS:
-        svg = _get(f"https://cdn.jsdelivr.net/npm/simple-icons@13.21.0/icons/{name}.svg")
-        out["brands"][name] = re.search(r'<path d="([^"]+)"', svg).group(1)
-    logo = _get("https://upload.wikimedia.org/wikipedia/commons/8/8d/42_Logo.svg")
-    # the official mark's polygons, in its own 960 box
-    out["mark42"] = [" ".join(p.split()) for p in re.findall(r'<polygon[^>]*points="([^"]+)"', logo)]
-    (DATA / "icons.json").write_text(json.dumps(out, ensure_ascii=False, separators=(",", ":")))
-    print("icons.json", (DATA / "icons.json").stat().st_size // 1024, "KB")
-    for key, body in out["skills"].items():
-        print(key, len(body))
+def shots():
+    from PIL import Image
+    for name in SHOTS:
+        path = ASSETS / f"atom-{name}.webp"
+        with Image.open(path) as image:
+            if image.width > SHOT_WIDTH:
+                image = image.convert("RGB").resize((SHOT_WIDTH, image.height * SHOT_WIDTH // image.width), Image.LANCZOS)
+                image.save(path, "WEBP", quality=80, method=6)
+        print(path.name, path.stat().st_size // 1024, "KB")
 
 
 def palettes():
-    """The hero's wallpaper at every knot of the day, through Atom Plasma's own palette engine."""
-    sys.path.insert(0, str(HERE))
-    import importlib.util
-    import draw
-    import scene
+    """The three screenshots through the same engine that colours the desktop in them."""
     spec = importlib.util.spec_from_file_location("palette", RICE / "atom/palette.py")
     engine = importlib.util.module_from_spec(spec)
     spec.loader.exec_module(engine)
-    svg = scene.hero(("07:00", "19:00"), {"phase": .3, "name": ""}, desktop=False)
-    out = {"primary": [], "secondary": [], "tertiary": [], "mood": []}
-    with tempfile.TemporaryDirectory() as tmp:
-        tmp = pathlib.Path(tmp)
-        for knot in range(draw.KNOTS):
-            t = knot * draw.CYCLE / draw.KNOTS
-            page, png = tmp / f"{knot}.html", tmp / f"{knot}.png"
-            page.write_text(f"<!doctype html><style>*{{animation-play-state:paused!important;"
-                            f"animation-delay:-{t}s!important}}</style><body style=margin:0>{svg}")
-            subprocess.run(["firefox", "--headless", "--no-remote", "--profile", str(tmp), "--window-size=1280,540",
-                            "--screenshot", str(png), f"file://{page}"], capture_output=True, timeout=60, check=True,
-                           env={**os.environ, "MOZ_CRASHREPORTER_DISABLE": "1"})
-            analysis = engine.analyse(str(png))
-            colours = engine.build_v2(analysis)
-            for key in ("primary", "secondary", "tertiary"):
-                out[key].append(colours[key])
-            out["mood"].append(colours["_mood"])
-    (DATA / "palettes.json").write_text(json.dumps(out, indent=0))
-    print(*zip(out["mood"], out["primary"], out["secondary"], out["tertiary"]), sep="\n")
+    out = {}
+    for name in SHOTS:
+        colours = engine.build_v2(engine.analyse(str(ASSETS / f"atom-{name}.webp")))
+        out[name] = [colours[key] for key in RAMP]
+    (DATA / "palettes.json").write_text(json.dumps(out, indent=1))
+    print(out)
 
 
 def libt():

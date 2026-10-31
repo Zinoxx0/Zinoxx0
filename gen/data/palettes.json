@@ -1,74 +1,26 @@
 {
-"primary": [
-"#dca9e4",
-"#ce23e3",
-"#c923ec",
-"#a750f8",
-"#766ff8",
-"#adbaf6",
-"#abb9fc",
-"#aebaf5",
-"#acb9fc",
-"#adbaf6",
-"#7a6df8",
-"#ceaafc",
-"#b0b8fc",
-"#1c8af3",
-"#1c8cec",
-"#3486f8"
-],
-"secondary": [
-"#c6c3ff",
-"#9a87f9",
-"#9888f9",
-"#c070f9",
-"#9589f9",
-"#c0c5ff",
-"#c0c6fd",
-"#c0c5fe",
-"#c0c6fd",
-"#c0c5ff",
-"#9888f9",
-"#f3b5d7",
-"#c3c4fd",
-"#619ff9",
-"#5ba0f9",
-"#6c9cf9"
-],
-"tertiary": [
-"#d992af",
-"#f9304c",
-"#f7237b",
-"#e523c8",
-"#4c62f7",
-"#90aae2",
-"#89a9f2",
-"#91aae1",
-"#89a9f1",
-"#90aae2",
-"#5360f7",
-"#e39386",
-"#8da8f2",
-"#187ebd",
-"#197fb9",
-"#d36c1b"
-],
-"mood": [
-"soft",
-"neon",
-"neon",
-"neon",
-"neon",
-"soft",
-"soft",
-"soft",
-"soft",
-"soft",
-"neon",
-"soft",
-"soft",
-"neon",
-"neon",
-"neon"
-]
+ "teal": [
+  "#071019",
+  "#1a252e",
+  "#6a9ab2",
+  "#7db3cf",
+  "#8fc7e3",
+  "#9cd4f0"
+ ],
+ "lilac": [
+  "#100d19",
+  "#23212e",
+  "#988ab3",
+  "#aba3d4",
+  "#c5b4e4",
+  "#d6bfef"
+ ],
+ "ink": [
+  "#010101",
+  "#0b0b0b",
+  "#8e9299",
+  "#d9dfe6",
+  "#b9bec6",
+  "#81878d"
+ ]
 }

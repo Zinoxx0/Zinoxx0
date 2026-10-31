@@ -1,6 +1,6 @@
-# Redraws the profile's images every day from live GitHub data and today's sky over Lisbon.
-# They go to the output branch as a single commit, so main's history stays readable. If anything
-# fails, nothing is published and yesterday's images stay up.
+# Redraws the profile's images every day from live GitHub data. They go to the output branch as a
+# single commit, so main's history stays readable. If anything fails, nothing is published and
+# yesterday's images stay up.
 name: refresh
 
 on:
@@ -8,7 +8,7 @@ on:
     - cron: "17 3 * * *"
   push:
     branches: [main]
-    paths: ["gen/**", ".github/workflows/refresh.yml"]
+    paths: ["gen/**", "assets/**", ".github/workflows/refresh.yml"]
   workflow_dispatch:
 
 permissions:
