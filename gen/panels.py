@@ -11,7 +11,7 @@ import letters
 from kit import DATA, DIM, FAINT, INK, LINE, SIG, Svg, VOID, arrow, dots, num, plate, sigil
 
 ASSETS = DATA.parent.parent / "assets"
-SHOTS = ("teal", "lilac", "ink")
+SHOTS = ("desktop", "home", "theme")      # the desktop, the launcher's Home, its Theme page
 PALETTES = json.loads((DATA / "palettes.json").read_text(encoding="utf-8"))
 PRIMARY = 4                 # the primary accent's place in a palette's ramp
 
@@ -35,8 +35,8 @@ def atom(commits):
     """The one place on the page with colour in it, because colour is what the project does."""
     h = 424
     box = 24, 52, 620, 348
-    s = Svg(h, "Atom Plasma: a KDE Plasma 6 rice driven by the wallpaper.",
-            "The same desktop on three wallpapers, and the palette the rice computed from each.")
+    s = Svg(h, "Atom Plasma: a KDE Plasma 6 rice driven by the wallpaper, with a shell and a launcher of its own.",
+            "The desktop, the launcher and its Theme page on three wallpapers, each with the palette the rice computed from it.")
     plate(s, "0x10", "ATOM PLASMA", f"{commits} COMMITS")
     s.add(arrow(s.w - 16, 26))
 
@@ -72,7 +72,7 @@ def atom(commits):
 
     right = 668
     s.add(letters.title(s, "ATOM", right, 62, 30), letters.title(s, "PLASMA", right, 104, 30))
-    s.add(_paragraph(s, ("A KDE Plasma 6 rice driven by", "the wallpaper. Every screen", "computes its own palette."), right, 168))
+    s.add(_paragraph(s, ("A KDE Plasma 6 rice driven by", "the wallpaper, with a shell", "and a launcher of its own."), right, 168))
 
     s.add(s.label("PALETTE", right, 252))
     size, gap = 46, 6

@@ -73,7 +73,7 @@ That is why inline CSS works and an external file wouldn't.
 ```
 README.md               the page itself: text, plus links to the images
 HOW_IT_WORKS.md         this file
-assets/                 the three desktop screenshots in the Atom panel
+assets/                 the three screenshots in the Atom panel (the desktop, the launcher, its Theme page)
 gen/
   build.py              the entry point: fetches data, draws everything, writes dist/
   kit.py                the drawing kit every image shares
@@ -83,7 +83,7 @@ gen/
   make_data.py          rebuilds gen/data/, only ever run by hand
   data/
     glyphs.json         Geist Mono as vector outlines
-    palettes.json       the rice's palette engine, run on the three screenshots
+    palettes.json       the rice's palette engine, run on the three screenshots' wallpapers
     libt-run.txt        a recorded real run of Libft_Tester
     NOTICE.md           licences
 tests/test_gen.py       the test suite
@@ -443,10 +443,10 @@ Three screenshots are embedded in the SVG as base64. They're defined once in `<d
 image data isn't repeated even though the first one appears twice:
 
 ```
-top     teal again   ← wipes in last, and closes the loop
-        ink
-        lilac
-bottom  teal
+top     desktop again   ← wipes in last, and closes the loop
+        theme
+        home
+bottom  desktop
 ```
 
 Each upper layer starts fully clipped and wipes in:
@@ -460,13 +460,15 @@ Each upper layer starts fully clipped and wipes in:
 ```
 
 `inset(0 100% 0 0)` cuts 100% from the right, so nothing shows. `inset(0 0 0 0)` shows everything. Over 18 seconds, the
-wipes run at 5.1, 11.1 and 17.1 s. When the loop restarts, the top teal layer disappears to reveal the bottom teal,
+wipes run at 5.1, 11.1 and 17.1 s. When the loop restarts, the top desktop layer disappears to reveal the bottom one,
 which looks identical, so you never see the seam.
 
 A thin lime bar follows the wipe's edge, on the same timing. Each palette switches halfway through its wipe.
 
-The swatches are the real output of Atom Plasma's palette engine, run on those screenshots by `make_data.py palettes`.
-This is the only colour on the page, because colour is what the project does.
+The three frames are three of my saved themes, each showing a different part of the rice: the desktop (neony), the
+launcher's Home with a game focused (tokyo nigh) and its Theme page (jjk). The swatches are the real output of Atom
+Plasma's palette engine for each frame's wallpaper, the same function that coloured the desktop in it (`palette_for`),
+run by `make_data.py palettes`. This is the only colour on the page, because colour is what the project does.
 
 ### Libft Tester: the board
 
@@ -643,14 +645,19 @@ python3 gen/make_data.py fonts      # the outlines again, after changing CHARS o
 
 ### Replace the screenshots
 
-Put new files at `assets/atom-teal.webp`, `atom-lilac.webp` and `atom-ink.webp`, then run:
+Atom Plasma takes them itself, in a nested Plasma session, so nothing of mine is on them (no windows, no
+notifications) and my own desktop doesn't change: `tools/nested/showcase.sh WALLPAPER OUT` puts the main screen
+(2560x1440 at 1.15) in that wallpaper's palette and saves `desk.png`, `home.png`, `game.png` and `look.png`. Save
+the three you want, full size, as `assets/atom-desktop.webp`, `atom-home.webp` and `atom-theme.webp` (lossless is fine:
+`shots` brings them down), point `WALLPAPERS` in `gen/make_data.py` at their wallpapers, then run:
 
 ```sh
 python3 gen/make_data.py shots palettes
 ```
 
-This repo is public and screenshots are forever, so look over each one for anything private first. To use other names,
-change `SHOTS` in both `gen/panels.py` and `gen/make_data.py`.
+`shots` cuts them to 1280 px at WebP quality 74: the page has to stay under 500 KB (a test checks it), and at 80 the
+busy desktop shot alone was 113 KB. This repo is public and screenshots are forever, so look over each one for
+anything private first. To use other names, change `SHOTS` in both `gen/panels.py` and `gen/make_data.py`.
 
 ### Redraw without waiting for the night
 

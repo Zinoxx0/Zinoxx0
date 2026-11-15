@@ -4,11 +4,11 @@
 
 <samp>
 
-I'm Samir, also known as Zinoxx: a student at [42 Lisboa](https://www.42lisboa.com) and co-founder and lead engineer at [ViVia Technologies](https://viviatech.github.io). I also edit VFX, so I care about how software looks as much as how it runs, which is how a desktop theme turned into 22,000 lines of code.
+I'm Samir, also known as Zinoxx: a student at [42 Lisboa](https://www.42lisboa.com) and co-founder and lead engineer at [ViVia Technologies](https://viviatech.github.io). I also edit VFX, so I care about how software looks as much as how it runs, which is how a desktop theme turned into 40,000 lines of code.
 
 </samp>
 
-<a href="https://github.com/Zinoxx0/Atom-Plasma"><img src="https://raw.githubusercontent.com/Zinoxx0/Zinoxx0/output/atom.svg" width="100%" alt="Atom Plasma: a KDE Plasma 6 rice driven by the wallpaper. The same desktop on three wallpapers, with the palette the rice computed from each. The bars, terminals, VS Code, Zen, the login screen and the keyboard lighting all follow it."></a>
+<a href="https://github.com/Zinoxx0/Atom-Plasma"><img src="https://raw.githubusercontent.com/Zinoxx0/Zinoxx0/output/atom.svg" width="100%" alt="Atom Plasma: a KDE Plasma 6 rice driven by the wallpaper, with a shell and a launcher of its own. Three wallpapers, three views: the desktop with its island bar and desk clock, the Atom Home launcher with a game's art filling the room, and its Theme page, each with the palette the rice computed from its wallpaper. The bars, terminals, VS Code, Zen, the login screen and the keyboard lighting all follow it."></a>
 
 <a href="https://github.com/Zinoxx0/Libft_Tester"><img src="https://raw.githubusercontent.com/Zinoxx0/Zinoxx0/output/libt.svg" width="100%" alt="Libft Tester: tells you exactly which call failed and why. It catches crashes, leaks, one byte past a malloc block and malloc failures. A board replays a real run where all 43 functions pass."></a>
 

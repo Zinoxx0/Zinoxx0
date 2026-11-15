@@ -2,8 +2,8 @@
 """Rebuilds gen/data/ on this machine. Never runs in CI: the daily build only reads what this writes.
 
     fonts     Geist Mono as outlines, because an SVG inside an <img> can't count on loading a font
-    shots     the three desktop screenshots, cut down to what the Atom panel can show
-    palettes  those screenshots through Atom Plasma's own palette engine
+    shots     the three screenshots, cut down to what the Atom panel can show
+    palettes  their wallpapers through Atom Plasma's own palette engine (as the desktop computed them)
     libt      a real `libt all` run of the tester against the real libft
 
 Usage: python3 gen/make_data.py fonts shots palettes libt
@@ -30,8 +30,17 @@ GEIST = "https://cdn.jsdelivr.net/fontsource/fonts/geist-mono@5.3.0/latin-{}-nor
 FACES = {"m400": 400, "m500": 500}
 CHARS = "".join(map(chr, range(32, 127))) + "·—°"
 
-SHOTS = ("teal", "lilac", "ink")
+SHOTS = ("desktop", "home", "theme")
 SHOT_WIDTH = 1280
+SHOT_QUALITY = 74       # (all three must keep the page under its 500 KB: at 80 the busy desktop shot alone was 113 KB)
+# what each screenshot was taken on: my saved themes' wallpapers (neony, tokyo nigh, jjk). The shots come from
+# Atom Plasma's tools/nested/showcase.sh WALLPAPER OUT: the main screen in a nested Plasma, in that wallpaper's
+# palette, with nothing of mine on it (desk.png, game.png and look.png here)
+WALLPAPERS = {
+    "desktop": pathlib.Path.home() / "Pictures/Wallpapers/wallhaven-e76yzr.jpg",
+    "home": pathlib.Path.home() / "Pictures/Wallpapers/wallhaven-wy6vqx.jpg",
+    "theme": pathlib.Path.home() / "Pictures/Wallpapers/wallhaven-y8mmrk.jpg",
+}
 # what the panel prints as a palette, darkest to lightest, by the engine's names
 RAMP = ("background", "surface_high", "primary_dim", "tertiary", "primary", "secondary")
 
@@ -106,18 +115,24 @@ def shots():
         with Image.open(path) as image:
             if image.width > SHOT_WIDTH:
                 image = image.convert("RGB").resize((SHOT_WIDTH, image.height * SHOT_WIDTH // image.width), Image.LANCZOS)
-                image.save(path, "WEBP", quality=80, method=6)
+                image.save(path, "WEBP", quality=SHOT_QUALITY, method=6)
         print(path.name, path.stat().st_size // 1024, "KB")
 
 
 def palettes():
-    """The three screenshots through the same engine that colours the desktop in them."""
-    spec = importlib.util.spec_from_file_location("palette", RICE / "atom/palette.py")
-    engine = importlib.util.module_from_spec(spec)
-    spec.loader.exec_module(engine)
+    """Each screenshot's wallpaper through the very function that coloured the desktop in it (Atom Plasma's
+    palette_for, with my settings), so the swatches are the colours on screen. Without the wallpaper on this
+    machine, the screenshot itself goes through the engine instead."""
+    sys.path.insert(0, str(RICE))
+    from atom import util
+    from atom.walls import palette_for
     out = {}
     for name in SHOTS:
-        colours = engine.build_v2(engine.analyse(str(ASSETS / f"atom-{name}.webp")))
+        source = WALLPAPERS.get(name)
+        if not source or not source.is_file():
+            print(f"{name}: no {source}, using the screenshot")
+            source = ASSETS / f"atom-{name}.webp"
+        colours = palette_for(source, util.settings(), None)
         out[name] = [colours[key] for key in RAMP]
     (DATA / "palettes.json").write_text(json.dumps(out, indent=1))
     print(out)
