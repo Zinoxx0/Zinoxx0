@@ -102,7 +102,7 @@ class Motion(unittest.TestCase):
 
     def test_the_wipe_holds_still_between_wipes(self):
         svg = IMAGES["atom"]
-        for name in ("w1", "w2", "w3", "scan"):
+        for name in [f"w{i}" for i in range(1, len(panels.SHOTS) + 1)] + ["scan"]:
             self.assertRegex(svg, rf"\.{name}\{{[^}}]*step-end infinite")
 
     def test_the_scan_bar_is_off_outside_a_wipe(self):

@@ -11,12 +11,12 @@ import letters
 from kit import DATA, DIM, FAINT, INK, LINE, SIG, Svg, VOID, arrow, dots, num, plate, sigil
 
 ASSETS = DATA.parent.parent / "assets"
-SHOTS = ("desktop", "home", "theme")      # the desktop, the launcher's Home, its Theme page
+SHOTS = ("desktop", "home", "theme", "stats")   # desktop + Claude widget, Atom launcher, Theme page, System meters
 PALETTES = json.loads((DATA / "palettes.json").read_text(encoding="utf-8"))
 PRIMARY = 4                 # the primary accent's place in a palette's ramp
 
-SWITCH = 6                  # seconds a wallpaper stays
-WIPE = .9                   # seconds a wallpaper takes to replace the last
+SWITCH = 5                  # seconds a view stays
+WIPE = .9                   # seconds a view takes to replace the last
 WIPE_FPS = 24
 
 PASS_AT = .16               # seconds per function in the tester's replay
@@ -36,7 +36,7 @@ def atom(commits):
     h = 424
     box = 24, 52, 620, 348
     s = Svg(h, "Atom Plasma: a KDE Plasma 6 rice driven by the wallpaper, with a shell and a launcher of its own.",
-            "The desktop, the launcher and its Theme page on three wallpapers, each with the palette the rice computed from it.")
+            "The desktop with its Claude usage widget, Atom's orbital launcher, its Theme page and live system meters on three wallpapers, each with the palette the rice computed from it.")
     plate(s, "0x10", "ATOM PLASMA", f"{commits} COMMITS")
     s.add(arrow(s.w - 16, 26))
 

@@ -2,7 +2,7 @@
 """Rebuilds gen/data/ on this machine. Never runs in CI: the daily build only reads what this writes.
 
     fonts     Geist Mono as outlines, because an SVG inside an <img> can't count on loading a font
-    shots     the three screenshots, cut down to what the Atom panel can show
+    shots     the four screenshots, cut down to what the Atom panel can show
     palettes  their wallpapers through Atom Plasma's own palette engine (as the desktop computed them)
     libt      a real `libt all` run of the tester against the real libft
 
@@ -30,16 +30,21 @@ GEIST = "https://cdn.jsdelivr.net/fontsource/fonts/geist-mono@5.3.0/latin-{}-nor
 FACES = {"m400": 400, "m500": 500}
 CHARS = "".join(map(chr, range(32, 127))) + "·—°"
 
-SHOTS = ("desktop", "home", "theme")
-SHOT_WIDTH = 1280
-SHOT_QUALITY = 74       # (all three must keep the page under its 500 KB: at 80 the busy desktop shot alone was 113 KB)
-# what each screenshot was taken on: my saved themes' wallpapers (neony, tokyo nigh, jjk). The shots come from
-# Atom Plasma's tools/nested/showcase.sh WALLPAPER OUT: the main screen in a nested Plasma, in that wallpaper's
-# palette, with nothing of mine on it (desk.png, game.png and look.png here)
+SHOTS = ("desktop", "home", "theme", "stats")
+SHOT_WIDTH = 1024       # ~2x the ~515 px rendered width on GitHub; keeps all four shots well under 500 KB
+SHOT_QUALITY = 74
+# what each screenshot was taken on: the three monitors of my "prof" theme (main 1440p Torii gates, laptop neon
+# waves, 4K Mt. Fuji), taken in a nested Plasma (Atom Plasma's tools/nested/) with nothing of mine on them:
+# desktop + Claude usage widget, Atom's orbital launcher, the redesigned Theme page and the live System meters
 WALLPAPERS = {
-    "desktop": pathlib.Path.home() / "Pictures/Wallpapers/wallhaven-e76yzr.jpg",
-    "home": pathlib.Path.home() / "Pictures/Wallpapers/wallhaven-wy6vqx.jpg",
-    "theme": pathlib.Path.home() / "Pictures/Wallpapers/wallhaven-y8mmrk.jpg",
+    "desktop": pathlib.Path.home() / "Pictures/Wallpapers/wallhaven-k88z5m.jpg",
+    "home": pathlib.Path.home() / "Pictures/Wallpapers/wallhaven-3z91ey.jpg",
+    "theme": pathlib.Path.home() / "Pictures/Wallpapers/wallhaven-5ymyz7.jpg",
+    "stats": pathlib.Path.home() / "Pictures/Wallpapers/wallhaven-3z91ey.jpg",
+}
+# per-screen colour overrides from "prof" (~/.local/state/rice/overrides.json) so palettes() matches what's on screen
+OVERRIDES = {
+    "desktop": {"intensity": 1.0, "primary": "#a62323", "secondary": "#8fa033", "tertiary": "#828282", "mood": "soft"},
 }
 # what the panel prints as a palette, darkest to lightest, by the engine's names
 RAMP = ("background", "surface_high", "primary_dim", "tertiary", "primary", "secondary")
@@ -132,7 +137,7 @@ def palettes():
         if not source or not source.is_file():
             print(f"{name}: no {source}, using the screenshot")
             source = ASSETS / f"atom-{name}.webp"
-        colours = palette_for(source, util.settings(), None)
+        colours = palette_for(source, util.settings(), OVERRIDES.get(name))
         out[name] = [colours[key] for key in RAMP]
     (DATA / "palettes.json").write_text(json.dumps(out, indent=1))
     print(out)

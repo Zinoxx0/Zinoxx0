@@ -73,7 +73,7 @@ That is why inline CSS works and an external file wouldn't.
 ```
 README.md               the page itself: text, plus links to the images
 HOW_IT_WORKS.md         this file
-assets/                 the three screenshots in the Atom panel (the desktop, the launcher, its Theme page)
+assets/                 the four screenshots in the Atom panel (desktop + Claude widget, launcher, Theme page, system meters)
 gen/
   build.py              the entry point: fetches data, draws everything, writes dist/
   kit.py                the drawing kit every image shares
@@ -83,7 +83,7 @@ gen/
   make_data.py          rebuilds gen/data/, only ever run by hand
   data/
     glyphs.json         Geist Mono as vector outlines
-    palettes.json       the rice's palette engine, run on the three screenshots' wallpapers
+    palettes.json       the rice's palette engine, run on the screenshots' wallpapers
     libt-run.txt        a recorded real run of Libft_Tester
     NOTICE.md           licences
 tests/test_gen.py       the test suite
@@ -439,11 +439,12 @@ colliding with the text.
 
 ### Atom Plasma: the wipe
 
-Three screenshots are embedded in the SVG as base64. They're defined once in `<defs>` and stacked with `<use>`, so the
+Four screenshots are embedded in the SVG as base64. They're defined once in `<defs>` and stacked with `<use>`, so the
 image data isn't repeated even though the first one appears twice:
 
 ```
 top     desktop again   ← wipes in last, and closes the loop
+        stats
         theme
         home
 bottom  desktop
@@ -454,20 +455,21 @@ Each upper layer starts fully clipped and wipes in:
 ```css
 @keyframes w1 {
   0%      { clip-path: inset(0 100% 0 0) }
-  28.33%  { clip-path: inset(0 100% 0 0); animation-timing-function: steps(22) }
-  33.33%, 100% { clip-path: inset(0 0 0 0) }
+  20.5%   { clip-path: inset(0 100% 0 0); animation-timing-function: steps(22) }
+  25%, 100% { clip-path: inset(0 0 0 0) }
 }
 ```
 
-`inset(0 100% 0 0)` cuts 100% from the right, so nothing shows. `inset(0 0 0 0)` shows everything. Over 18 seconds, the
-wipes run at 5.1, 11.1 and 17.1 s. When the loop restarts, the top desktop layer disappears to reveal the bottom one,
-which looks identical, so you never see the seam.
+`inset(0 100% 0 0)` cuts 100% from the right, so nothing shows. `inset(0 0 0 0)` shows everything. Over 20 seconds, the
+wipes run at 4.1, 9.1, 14.1 and 19.1 s. When the loop restarts, the top desktop layer disappears to reveal the bottom
+one, which looks identical, so you never see the seam.
 
 A thin lime bar follows the wipe's edge, on the same timing. Each palette switches halfway through its wipe.
 
-The three frames are three of my saved themes, each showing a different part of the rice: the desktop (neony), the
-launcher's Home with a game focused (tokyo nigh) and its Theme page (jjk). The swatches are the real output of Atom
-Plasma's palette engine for each frame's wallpaper, the same function that coloured the desktop in it (`palette_for`),
+The four frames come from the three screens of my `prof` theme, each showing a different part of the rice: the desktop
+with its Claude usage widget open (main 1440p Torii gates), Atom's orbital launcher on Home with a game focused (laptop
+neon waves), its Theme page (4K Mt. Fuji), and the live CPU/RAM/GPU system meters popup (laptop neon waves). The
+swatches are the real output of Atom Plasma's palette engine for each screen (`palette_for`, including its overrides),
 run by `make_data.py palettes`. This is the only colour on the page, because colour is what the project does.
 
 ### Libft Tester: the board
@@ -646,18 +648,21 @@ python3 gen/make_data.py fonts      # the outlines again, after changing CHARS o
 ### Replace the screenshots
 
 Atom Plasma takes them itself, in a nested Plasma session, so nothing of mine is on them (no windows, no
-notifications) and my own desktop doesn't change: `tools/nested/showcase.sh WALLPAPER OUT` puts the main screen
-(2560x1440 at 1.15) in that wallpaper's palette and saves `desk.png`, `home.png`, `game.png` and `look.png`. Save
-the three you want, full size, as `assets/atom-desktop.webp`, `atom-home.webp` and `atom-theme.webp` (lossless is fine:
-`shots` brings them down), point `WALLPAPERS` in `gen/make_data.py` at their wallpapers, then run:
+notifications) and my own desktop doesn't change: `tools/nested/showcase.sh` (for the desktop and bar popups) and
+`tools/nested/look-launcher.sh` (with `ATOM_STYLE=atom ATOM_MYAPPS=1 ATOM_WALL=...` for the launcher and its Theme
+page) put the main screen (2560x1440 at 1.15) in each wallpaper's palette. Save the four you want, full size, as
+`assets/atom-desktop.webp`, `atom-home.webp`, `atom-theme.webp` and `atom-stats.webp` (lossless is fine: `shots` brings
+them down), point `WALLPAPERS` (and `OVERRIDES`, if a screen uses custom accents) in `gen/make_data.py` at their
+wallpapers, then run:
 
 ```sh
 python3 gen/make_data.py shots palettes
 ```
 
-`shots` cuts them to 1280 px at WebP quality 74: the page has to stay under 500 KB (a test checks it), and at 80 the
-busy desktop shot alone was 113 KB. This repo is public and screenshots are forever, so look over each one for
-anything private first. To use other names, change `SHOTS` in both `gen/panels.py` and `gen/make_data.py`.
+`shots` cuts them to 1024 px at WebP quality 74 (still about 2x the ~515 px rendered width on GitHub): the page has to
+stay under 500 KB (a test checks it), and the sharp Noisy-only launcher backdrop and wallpaper grid pack denser than
+the old blurred views. This repo is public and screenshots are forever, so look over each one for anything private
+first. To use other names, change `SHOTS` in both `gen/panels.py` and `gen/make_data.py`.
 
 ### Redraw without waiting for the night
 
