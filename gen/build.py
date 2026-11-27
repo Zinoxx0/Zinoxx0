@@ -24,10 +24,23 @@ SKIP_REPOS = {LOGIN}
 TOP_LANGUAGES = 6
 # The bodies of the map, and the rows of the table. Seven, because a pass of the map is 7 x 6 s = 42 s.
 ORBITS = 7
+# Public repositories owned by an organisation (e.g. ViVia Technologies) that still belong on the page.
+EXTRA_REPOS = (("ViviaTech", "Atom-Plasma"),)
+REPO_OWNERS = {name: owner for owner, name in EXTRA_REPOS}
 # Each row is a link in the README, which never changes, so the table keeps a fixed order.
 TABLE = ("Atom-Plasma", "Libft_Tester", "Libft", "Piscine42", "Pipex", "Get_next_line", "Printf")
 
-QUERY = """
+REPO_FIELDS = """
+fragment repoFields on Repository {
+  name pushedAt
+  owner { login }
+  primaryLanguage { name }
+  languages(first: 12) { edges { size node { name } } }
+  defaultBranchRef { target { ... on Commit { abbreviatedOid history { totalCount } } } }
+}
+"""
+
+QUERY = ("""
 query($login: String!) {
   user(login: $login) {
     contributionsCollection {
@@ -35,16 +48,32 @@ query($login: String!) {
     }
     repositories(first: 100, ownerAffiliations: OWNER, privacy: PUBLIC, isFork: false,
                  orderBy: {field: PUSHED_AT, direction: DESC}) {
-      nodes {
-        name pushedAt
-        primaryLanguage { name }
-        languages(first: 12) { edges { size node { name } } }
-        defaultBranchRef { target { ... on Commit { abbreviatedOid history { totalCount } } } }
-      }
+      nodes { ...repoFields }
     }
   }
-}
-"""
+""" + "".join(f'  extra{i}: repository(owner: "{owner}", name: "{name}") {{ ...repoFields }}\n'
+              for i, (owner, name) in enumerate(EXTRA_REPOS)) + "}\n" + REPO_FIELDS)
+
+
+def repo_owner(name):
+    return REPO_OWNERS.get(name, LOGIN)
+
+
+def repo_nodes(data):
+    """Own public repos plus EXTRA_REPOS, skipping SKIP_REPOS and deduplicating by name."""
+    user = data["user"] if "user" in data else data
+    raw = list(user["repositories"]["nodes"])
+    for i in range(len(EXTRA_REPOS)):
+        extra = data.get(f"extra{i}") if "user" in data else None
+        if extra:
+            raw.append(extra)
+    seen, out = set(), []
+    for node in raw:
+        if not node or node["name"] in SKIP_REPOS or node["name"] in seen:
+            continue
+        seen.add(node["name"])
+        out.append(node)
+    return out
 
 
 def token():
@@ -75,29 +104,30 @@ def ago(days):
     return f"{days // 365}y ago"
 
 
-def repos(user, now):
-    """My own public repos, freshest first."""
+def repos(data, now):
+    """My public repos (and org repos listed in EXTRA_REPOS), freshest first."""
     out = []
-    for node in user["repositories"]["nodes"]:
-        if node["name"] in SKIP_REPOS or not node["defaultBranchRef"]:
+    for node in repo_nodes(data):
+        if not node["defaultBranchRef"]:
             continue
         pushed = dt.datetime.fromisoformat(node["pushedAt"].replace("Z", "+00:00"))
         days = (now - pushed).days
         head = node["defaultBranchRef"]["target"]
-        out.append({"name": node["name"], "lang": (node["primaryLanguage"] or {}).get("name", "-"),
+        owner = (node.get("owner") or {}).get("login") or repo_owner(node["name"])
+        out.append({"name": node["name"], "owner": owner,
+                    "lang": (node["primaryLanguage"] or {}).get("name", "-"),
                     "commits": head["history"]["totalCount"], "head": head["abbreviatedOid"],
                     "days": days, "ago": ago(days)})
     return sorted(out, key=lambda repo: repo["days"])
 
 
-def languages(user):
-    """[(name, percent)] by bytes across my own public repos, the small ones folded into Other."""
+def languages(data):
+    """[(name, percent)] by bytes across my public repos, the small ones folded into Other."""
     sizes = {}
-    for repo in user["repositories"]["nodes"]:
-        if repo["name"] not in SKIP_REPOS:
-            for edge in repo["languages"]["edges"]:
-                name = edge["node"]["name"]
-                sizes[name] = sizes.get(name, 0) + edge["size"]
+    for repo in repo_nodes(data):
+        for edge in repo["languages"]["edges"]:
+            name = edge["node"]["name"]
+            sizes[name] = sizes.get(name, 0) + edge["size"]
     total = sum(sizes.values())
     ranked = sorted(sizes.items(), key=lambda kv: -kv[1])
     top = [(name, size * 100 / total) for name, size in ranked[:TOP_LANGUAGES]]
@@ -110,7 +140,7 @@ def render(data, now):
     user = data["user"]
     calendar = user["contributionsCollection"]["contributionCalendar"]
     weeks = [sum(day["contributionCount"] for day in week["contributionDays"]) for week in calendar["weeks"]]
-    every = repos(user, now)
+    every = repos(data, now)
     by_name = {repo["name"]: repo for repo in every}
     stamp = now.strftime("%Y-%m-%d %H:%MZ")
     stats = {"repos": len(every), "commits": sum(repo["commits"] for repo in every),
@@ -120,7 +150,7 @@ def render(data, now):
         "atom": panels.atom(by_name["Atom-Plasma"]["commits"]),
         "libt": panels.libt(by_name["Libft_Tester"]["commits"]),
         "ps-head": panels.table_head(),
-        "stack": panels.stack(languages(user)),
+        "stack": panels.stack(languages(data)),
         "eof": panels.eof(stamp),
     }
     for name in TABLE:

@@ -35,9 +35,9 @@ def atom(commits):
     """The one place on the page with colour in it, because colour is what the project does."""
     h = 424
     box = 24, 52, 620, 348
-    s = Svg(h, "Atom Plasma: a KDE Plasma 6 rice driven by the wallpaper, with a shell and a launcher of its own.",
+    s = Svg(h, "Atom Plasma (ViVia Technologies): a KDE Plasma 6 rice driven by the wallpaper, with a shell and a launcher of its own.",
             "The desktop with its Claude usage widget, Atom's orbital launcher, its Theme page and live system meters on three wallpapers, each with the palette the rice computed from it.")
-    plate(s, "0x10", "ATOM PLASMA", f"{commits} COMMITS")
+    plate(s, "0x10", "ATOM PLASMA", f"VIVIATECH · {commits} COMMITS")
     s.add(arrow(s.w - 16, 26))
 
     x, y, w, h_ = box
@@ -162,11 +162,13 @@ def table_head():
 
 def table_row(repo):
     live = repo["days"] <= 30
-    s = Svg(40, f'{repo["name"]}: {repo["lang"]}, {repo["commits"]} commits, pushed {repo["ago"].lower()}.')
+    owner = repo.get("owner")
+    label = f'{owner}/{repo["name"]}' if owner and owner != "Zinoxx0" else repo["name"]
+    s = Svg(40, f'{label}: {repo["lang"]}, {repo["commits"]} commits, pushed {repo["ago"].lower()}.')
     s.add(f'<path d="M.5 .5H{s.w - .5}V39.5H.5Z" fill="{VOID}" stroke="{LINE}"/>')
     s.add(f'<circle cx="30" cy="20" r="3" fill="{SIG if live else FAINT}"/>')
     y = 24.5
-    s.add(s.text(repo["name"].lower(), 46, y, 13, INK), s.label(repo["lang"].upper(), 330, y, DIM),
+    s.add(s.text(label.lower(), 46, y, 13, INK), s.label(repo["lang"].upper(), 330, y, DIM),
           s.label(str(repo["commits"]), 450, y, INK), s.text(repo["head"], 590, y, 12, DIM),
           s.label(repo["ago"].upper(), 720, y, DIM), s.label("RUNNING" if live else "IDLE", 850, y, SIG if live else DIM))
     s.add(arrow(s.w - 24, 16))

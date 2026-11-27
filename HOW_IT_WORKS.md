@@ -122,13 +122,14 @@ images = {
     "atom": panels.atom(by_name["Atom-Plasma"]["commits"]),
     "libt": panels.libt(by_name["Libft_Tester"]["commits"]),
     "ps-head": panels.table_head(),
-    "stack": panels.stack(languages(user)),
+    "stack": panels.stack(languages(data)),
     "eof": panels.eof(stamp),
 }
 ```
 
 The data comes from one GraphQL query in `QUERY`: the contribution calendar, plus each public repo's push date,
-languages, commit count and latest commit hash. `repos()` cleans that up and sorts it freshest first. The profile repo
+languages, commit count and latest commit hash (including organisation-owned repositories listed in `EXTRA_REPOS`,
+such as `ViviaTech/Atom-Plasma`). `repos()` cleans that up and sorts it freshest first. The profile repo
 itself is skipped through `SKIP_REPOS`, because a robot commits to it nightly, which would skew every number.
 
 **Failing on purpose.** Nothing in `build.py` catches errors. If a repo is missing or an image is broken, the run dies

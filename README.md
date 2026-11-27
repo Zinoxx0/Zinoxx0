@@ -8,12 +8,12 @@ I'm Samir, also known as Zinoxx: a student at [42 Lisboa](https://www.42lisboa.c
 
 </samp>
 
-<a href="https://github.com/Zinoxx0/Atom-Plasma"><img src="https://raw.githubusercontent.com/Zinoxx0/Zinoxx0/output/atom.svg" width="100%" alt="Atom Plasma: a KDE Plasma 6 rice driven by the wallpaper, with a shell and a launcher of its own. Four views across the three screens of the prof theme: the desktop with its island bar, desk clock, Clawd and open Claude usage widget, the Atom orbital launcher with a game's art filling the room, the redesigned Theme page, and the live CPU, RAM and GPU system meters widget, each with the palette the rice computed for its screen. The bars, terminals, VS Code, Zen, the login screen and the keyboard lighting all follow it."></a>
+<a href="https://github.com/ViviaTech/Atom-Plasma"><img src="https://raw.githubusercontent.com/Zinoxx0/Zinoxx0/output/atom.svg" width="100%" alt="Atom Plasma (ViVia Technologies): a KDE Plasma 6 rice driven by the wallpaper, with a shell and a launcher of its own. Four views across the three screens of the prof theme: the desktop with its island bar, desk clock, Clawd and open Claude usage widget, the Atom orbital launcher with a game's art filling the room, the redesigned Theme page, and the live CPU, RAM and GPU system meters widget, each with the palette the rice computed for its screen. The bars, terminals, VS Code, Zen, the login screen and the keyboard lighting all follow it."></a>
 
 <a href="https://github.com/Zinoxx0/Libft_Tester"><img src="https://raw.githubusercontent.com/Zinoxx0/Zinoxx0/output/libt.svg" width="100%" alt="Libft Tester: tells you exactly which call failed and why. It catches crashes, leaks, one byte past a malloc block and malloc failures. A board replays a real run where all 43 functions pass."></a>
 
 <a href="https://github.com/Zinoxx0?tab=repositories"><img src="https://raw.githubusercontent.com/Zinoxx0/Zinoxx0/output/ps-head.svg" width="100%" alt="The process table: my public repositories, with their language, commits, last commit and last push."></a>
-<a href="https://github.com/Zinoxx0/Atom-Plasma"><img src="https://raw.githubusercontent.com/Zinoxx0/Zinoxx0/output/ps-atom-plasma.svg" width="100%" alt="Atom-Plasma"></a>
+<a href="https://github.com/ViviaTech/Atom-Plasma"><img src="https://raw.githubusercontent.com/Zinoxx0/Zinoxx0/output/ps-atom-plasma.svg" width="100%" alt="ViviaTech/Atom-Plasma"></a>
 <a href="https://github.com/Zinoxx0/Libft_Tester"><img src="https://raw.githubusercontent.com/Zinoxx0/Zinoxx0/output/ps-libft_tester.svg" width="100%" alt="Libft_Tester"></a>
 <a href="https://github.com/Zinoxx0/Libft"><img src="https://raw.githubusercontent.com/Zinoxx0/Zinoxx0/output/ps-libft.svg" width="100%" alt="Libft"></a>
 <a href="https://github.com/Zinoxx0/Piscine42"><img src="https://raw.githubusercontent.com/Zinoxx0/Zinoxx0/output/ps-piscine42.svg" width="100%" alt="Piscine42"></a>

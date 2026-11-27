@@ -18,8 +18,9 @@ import panels
 NOW = dt.datetime(2026, 10, 31, 3, 17, tzinfo=dt.timezone.utc)
 
 
-def node(name, lang, commits, days, sizes):
-    return {"name": name, "pushedAt": (NOW - dt.timedelta(days=days)).isoformat().replace("+00:00", "Z"),
+def node(name, lang, commits, days, sizes, owner="Zinoxx0"):
+    return {"name": name, "owner": {"login": owner},
+            "pushedAt": (NOW - dt.timedelta(days=days)).isoformat().replace("+00:00", "Z"),
             "primaryLanguage": {"name": lang},
             "languages": {"edges": [{"size": size, "node": {"name": key}} for key, size in sizes.items()]},
             "defaultBranchRef": {"target": {"abbreviatedOid": "30565be", "history": {"totalCount": commits}}}}
@@ -30,12 +31,14 @@ def sample():
     days = [{"contributionCount": 9 if i > 330 and i % 3 == 0 else 0} for i in range(371)]
     weeks = [{"contributionDays": days[i:i + 7]} for i in range(0, 371, 7)]
     nodes = [node("Zinoxx0", "Python", 30, 0, {"Python": 99999}),
-             node("Atom-Plasma", "QML", 118, 3, {"QML": 590, "Python": 450}),
              node("Libft_Tester", "C", 17, 4, {"C": 300}), node("Libft", "C", 57, 7, {"C": 300}),
              node("Piscine42", "C", 67, 97, {"C": 900, "Shell": 12}), node("Pipex", "C", 16, 817, {"C": 90}),
              node("Get_next_line", "C", 9, 926, {"C": 50}), node("Printf", "C", 13, 984, {"C": 80, "Makefile": 3})]
     calendar = {"totalContributions": 261, "weeks": weeks}
-    return {"user": {"contributionsCollection": {"contributionCalendar": calendar}, "repositories": {"nodes": nodes}}}
+    return {
+        "user": {"contributionsCollection": {"contributionCalendar": calendar}, "repositories": {"nodes": nodes}},
+        "extra0": node("Atom-Plasma", "QML", 118, 3, {"QML": 590, "Python": 450}, owner="ViviaTech"),
+    }
 
 
 IMAGES = build.render(sample(), NOW)
@@ -138,15 +141,16 @@ class Orbits(unittest.TestCase):
 
 class Data(unittest.TestCase):
     def test_repos_skip_the_profile_and_start_with_the_freshest(self):
-        repos = build.repos(sample()["user"], NOW)
+        repos = build.repos(sample(), NOW)
         self.assertNotIn("Zinoxx0", [repo["name"] for repo in repos])
         self.assertEqual(repos[0]["name"], "Atom-Plasma")
+        self.assertEqual(repos[0]["owner"], "ViviaTech")
         self.assertEqual([r["days"] for r in repos], sorted(r["days"] for r in repos))
 
     def test_an_empty_repo_is_left_out(self):
-        user = sample()["user"]
-        user["repositories"]["nodes"][1]["defaultBranchRef"] = None
-        self.assertNotIn("Atom-Plasma", [repo["name"] for repo in build.repos(user, NOW)])
+        data = sample()
+        data["extra0"]["defaultBranchRef"] = None
+        self.assertNotIn("Atom-Plasma", [repo["name"] for repo in build.repos(data, NOW)])
 
     def test_ago(self):
         for days, want in ((0, "0d ago"), (13, "13d ago"), (14, "2w ago"), (59, "8w ago"), (97, "3mo ago"),
@@ -154,9 +158,10 @@ class Data(unittest.TestCase):
             self.assertEqual(build.ago(days), want)
 
     def test_languages_skip_the_profile(self):
-        shares = dict(build.languages(sample()["user"]))
+        shares = dict(build.languages(sample()))
         self.assertAlmostEqual(sum(shares.values()), 100)
         self.assertLess(shares["Python"], 40)
+        self.assertIn("QML", shares)
 
     def test_every_table_row_is_drawn(self):
         for name in build.TABLE:
@@ -214,7 +219,8 @@ class Readme(unittest.TestCase):
 
     def test_each_row_links_to_its_own_repo(self):
         for name in build.TABLE:
-            self.assertRegex(self.TEXT, rf'href="https://github.com/Zinoxx0/{name}"><img [^>]*ps-{name.lower()}\.svg')
+            owner = build.repo_owner(name)
+            self.assertRegex(self.TEXT, rf'href="https://github.com/{owner}/{name}"><img [^>]*ps-{name.lower()}\.svg')
 
 
 if __name__ == "__main__":
